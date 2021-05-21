@@ -1,0 +1,117 @@
+.section-footer {
+    box-shadow: 0 2px 10px rgb(51 51 51 / 10%);
+    position: relative;
+}
+
+.padding-y {
+    padding-top: 40px;
+    padding-bottom: 40px;
+}
+
+.section-footer .title {
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #212529;
+}
+.section-footer ul li {
+    margin-bottom: 5px;
+}
+.section-footer ul a {
+    color: inherit;
+}
+.footer-bottom {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+.btn-icon {
+    width: calc(1.5em + 0.9rem + 2px);
+    text-align: center;
+    padding-left: 0;
+    padding-right: 0;
+}
+.footer-copyright {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+.list-menu {
+    list-style: none;
+    margin: 0;
+    padding-left: 0;
+}
+.list-menu li {
+    margin-bottom: 5px;
+}
+.list-menu a {
+    color: #343a40;
+}
+.card-product-grid {
+    margin-bottom: 20px;
+}
+.img-wrap {
+    text-align: center;
+    display: block;
+}
+.card .img-wrap {
+    overflow: hidden;
+}
+.card-product-grid .img-wrap {
+    border-radius: 0.2rem 0.2rem 0 0;
+    height: 220px;
+}
+[class*=card-product] .img-wrap {
+    overflow: hidden;
+    position: relative;
+    background-color: #007bff1c;
+}
+[class*=card-product] .img-wrap img {
+    height: 100%;
+    max-width: 100%;
+    width: auto;
+    display: inline-block;
+    -o-object-fit: cover;
+    object-fit: cover;
+}
+.card-product-grid .info-wrap {
+    overflow: hidden;
+    padding: 18px 20px;
+}
+[class*=card-product] a.title {
+    color: #212529;
+    display: block;
+}
+.price {
+    font-weight: 600;
+    color: #212529;
+}
+.error{
+    color: rgb(251 80 59);
+}
+
+.js-check.box {
+    width: 100%;
+    border-width: 3px;
+}
+
+.js-check.active {
+    border-color: #3167eb;
+}
+.js-check {
+    position: relative;
+}
+.box {
+    padding: 18px;
+    background: #fff;
+    border-radius: 0.37rem;
+    border: 1px solid #e4e4e4;
+}
+.invoice-container {
+    margin: 15px auto;
+    padding: 70px;
+    max-width: 850px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    -o-border-radius: 6px;
+    border-radius: 6px;
+}
