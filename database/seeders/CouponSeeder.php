@@ -14,13 +14,13 @@ class CouponSeeder extends Seeder{
         Coupon::insert([
             [   
                 'code' => '5rKzK9WH',
-                'discount' => '10',
+                'discount' => '15',
                 'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
                 'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
             ],
             [
                 'code' => 'CN5CbjiP',
-                'discount' => '20',
+                'discount' => '15',
                 'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
                 'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
             ]
