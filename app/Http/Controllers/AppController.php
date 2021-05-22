@@ -16,15 +16,15 @@ use App\Models\Coupon;
 class AppController extends Controller{
 
 
-	public function __construct(){
+    public function __construct(){
        
     }
 
     public function index(){
 
-    	$categories = Category::all();
+        $categories = Category::all();
 
-    	$products = Product::orderBy('id')->simplePaginate(12);
+        $products = Product::orderBy('id')->simplePaginate(12);
 
         return view('home', ['categories' => $categories, 'products' => $products]);
     }
@@ -49,34 +49,70 @@ class AppController extends Controller{
         }
 
         $cart = session()->get('cart');
-
+        $qty=request()->qty ? request()->qty : 1;
+        $total=0;
+        $discounts=0;
+        $this_discounts=0;
         if(!$cart) {
+            $total=$product->price * $qty;
             $cart = [
+                'total' => $total ,
+                'items' =>  [
                     $id => [
                         "name" => $product->title,
                         "quantity" => 1,
                         "price" => $product->price,
                         "image" => $product->image
                     ]
+                ],
+                'discounts' =>  $discounts,
+                'qty'   =>  $qty,
             ];
             session()->put('cart', $cart);
             return response()->json(['type' => "success"], 200);
         }
 
-        if(isset($cart[$id])) {
-
-            $cart[$id]['quantity']++;
-
+        if(isset($cart['items'][$id])) {
+            $temp_categories=[];
+            $discounts=$cart['discount'];
+            $total_qty=0;
+            if(count($cart['items']) > 0){
+                foreach ($cart['items'] as $key => $value) {
+                    if(isset($temp_categories[$value->category_id])){
+                        $total=$total + ($value['price'] * $value['quantity']);
+                        $total_qty=$total_qty + $value['quantity'];
+                        $temp_categories[$value->category_id]=$temp_categories[$value->category_id]  +1;
+                    }else{
+                        $temp_categories[$value->category_id]=1;
+                    }
+                }
+            }
+            if($product->category()->first()->id ==1){ // define children books category id
+                if($qty >= 5){
+                    $this_discounts=$product->price * 10 / 100;
+                }
+            }
+            if(isset($temp_categories[$product->category_id]) && $temp_categories[$product->category_id] >= 10){
+                $discounts=$total - ($total * 10 / 100);
+            }
+            $cart['total']=$total + ($cart['items'][$id]['price'] * $cart['items'][$id]['quantity']);
+            $cart['items'][$id]['quantity']++;
+            $cart['items'][$id]['discount']=$this_discounts;
+            $cart['qty']=$total_qty;
+            $cart['discount']=$discounts;
             session()->put('cart', $cart);
 
             return response()->json(['type' => "success"], 200);
         }
-
-        $cart[$id] = [
+        $cart['total']=$cart['total'] + ($cart['items'][$id]['price'] * $cart['items'][$id]['quantity']);
+        $cart['qty']=$qty;
+        $cart['discount']=$discounts;
+        $cart['items'][$id] = [
             "name" => $product->title,
             "quantity" => 1,
             "price" => $product->price,
-            "image" => $product->image
+            "image" => $product->image,
+            "discount"  =>  $this_discounts,
         ];
 
         session()->put('cart', $cart);
@@ -89,11 +125,47 @@ class AppController extends Controller{
     }
 
     public function updateCart(Request $request){
+        $qty=$request->quantity;
+        $total=0;
+        $total_qty=0;
         if($request->id and $request->quantity) {
             $cart = session()->get('cart');
-            $cart[$request->id]["quantity"] = $request->quantity;
-            session()->put('cart', $cart);
-            return response()->json(['type' => "success"], 200);
+            if(isset($cart['items'][$request->id])){
+                $temp_categories=[];
+                $product=Product::find($request->id);
+                $discounts=$cart['discount'];
+                $this_discounts=0;
+                if(count($cart['items']) > 0){
+                    foreach ($cart['items'] as $key => $value) {
+                        $total=$total + ($value['price'] * $value['quantity']);
+                        $total_qty=$total_qty + $value['quantity'];
+                        if(isset($temp_categories[$value->category_id])){
+                            $temp_categories[$value->category_id]=$temp_categories[$value->category_id]  +1;
+                        }else{
+                            $temp_categories[$value->category_id]=1;
+                        }
+                    }
+                }
+
+                if($product->category()->first()->id ==1){ // define children books category id
+                    if($qty >= 5){
+                        $this_discounts=$product->price * 10 / 100;
+                    }
+                }
+                
+                
+                if(isset($temp_categories[$product->category_id]) && $temp_categories[$product->category_id] >= 10){
+                    $discounts=$total - ($total * 10 / 100);
+                }
+                $cart['discount']=$discounts;
+                $cart['qty']=$total_qty;
+                $cart['total']=$total + ($product->price * $request->quantity);
+                $cart['items'][$request->id]["quantity"] = $request->quantity;
+                $cart['items'][$request->id]["discount"]=$this_discounts;
+                session()->put('cart', $cart);
+                return response()->json(['type' => "success"], 200);
+            }
+            return response()->json(['type'=>'falied',403]);
         }
     }
 
@@ -101,7 +173,31 @@ class AppController extends Controller{
         if($request->id) {
             $cart = session()->get('cart');
             if(isset($cart[$request->id])) {
+                $total=0;
+                $temp_categories=[];
+                $total_qty=0;
+                $product=Product::find($request->id);
+                $discounts=$cart['discount'];;
                 unset($cart[$request->id]);
+                
+                if(count($cart['items']) > 0){
+                    foreach ($cart['items'] as $key => $value) {
+                        $total=$total + ($value['price'] * $value['quantity']);
+                        $total_qty=$total_qty + $value['quantity'];
+                        if(isset($temp_categories[$value->category_id])){
+                            $temp_categories[$value->category_id]=$temp_categories[$value->category_id]  +1;
+                        }else{
+                            $temp_categories[$value->category_id]=1;
+                        }
+                    }
+                }
+                if(isset($temp_categories[$product->category_id]) && $temp_categories[$product->category_id] >= 10){
+                    $discounts=$total - ($total * 10 / 100);
+                }
+
+                $cart['discount']=$discounts;
+                $cart['total']=$total + ($product->price * $request->quantity);
+                $cart['qty']=$total_qty;
                 session()->put('cart', $cart);
             }
             return response()->json(['type' => "success"], 200);
@@ -185,7 +281,24 @@ class AppController extends Controller{
             $code = $request->get('code');
             $data = Coupon::where('code', $code)->first();
             if($data){
-                return response()->json(['type' => "success", 'message' => $data], 200);
+                //Ok We have to call cart price for update
+                if(isset(session('cart'))){
+
+                    $cart=session('cart');
+                    
+                    $cop_d=session('cart')['total'] - (session('cart')['total'] * $data->discount / 100);
+                    
+                    $cart['copone_discount']=$cop_d;
+                    if($cop_d > 0){
+                        $cart['discount']=$cop_d;
+                        $cart['sub_total']=$cart['total'];
+                    }
+                    session()->put('cart', $cart);
+                    return response()->json(['type' => "success", 'message' => $data,'sub_total'=>number_format($cart['total'],2),'total' => number_format($cart['total'] - $cart['discount'],2),'qty'=>$cart['qty'],'discount'=>number_format($cart['discount'],2)], 200);
+                }else{
+                    return response()->json(['type' => "error"], 400);
+                }
+                
             }else{ 
                return response()->json(['type' => "error"], 400);
             }

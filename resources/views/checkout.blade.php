@@ -10,8 +10,12 @@
           </h4>
           <ul class="list-group mb-3">
               <?php $total = 0 ?>
+              @php 
+                $discount=0;
+              @endphp
               @if(session('cart'))
-              @foreach(session('cart') as $id => $details)
+                @php if(isset(session('cart')['discount']) && !isset(session('cart')['copone_discount']) && session('cart')['discount'] > 0 ){ $discount=$discount + session('cart')['discount']; }  @endphp
+              @foreach(session('cart')['items'] as $id => $details)
               <?php $total += $details['price'] * $details['quantity'] ?>
                 <li class="list-group-item d-flex justify-content-between lh-condensed">
                   <div>
@@ -20,6 +24,9 @@
                   </div>
                   <span class="text-muted">${{ $details['price'] * $details['quantity'] }}</span>
                 </li>
+                @php if(!isset(session('cart')['copone_discount']) && isset($details['discount']) && $details['discount'] > 0){
+                  $discount=$discount + $details['discount'];
+                } @endphp
               @endforeach
              @endif
             <li class="list-group-item d-flex justify-content-between bg-light" id="codeContainer" style="display: none !important">
@@ -33,7 +40,11 @@
               <span>Sub Total (USD)</span>
               <strong id="sub_total_pre">{{ number_format($total, 2) }}</strong>
             </li>
-
+            <li class="list-group-item d-flex justify-content-between">
+              <span>Discount (USD)</span>
+              <strong id="discount_total">{{ number_format($discount, 2) }}</strong>
+            </li>
+            
             <li class="list-group-item d-flex justify-content-between">
               <span>Total (USD)</span>
               <strong id="total_pre">{{ number_format($total, 2) }}</strong>
@@ -195,14 +206,16 @@
                         $('#code').text(data.message.code);  
                         $('#code_amount').text(data.message.discount + '%');
                         $('#codeContainer').show();
-                        
-                        var subtotal = $('#sub_total_pre').text();  
+                        $("#sub_total_pre").text(data.sub_total);
+                        $("#discount_total").text(data.discount);
+                        $("#total_pre").text(data.total);
+                        // var subtotal = $('#sub_total_pre').text();  
 
-                        var totalValue = subtotal * ( (100 - data.message.discount) / 100 );
+                        // var totalValue = subtotal * ( (100 - data.message.discount) / 100 );
 
-                        $('#total_pre').text(totalValue.toFixed(2));
+                        // $('#total_pre').text(totalValue.toFixed(2));
 
-                        $('#total').val(totalValue.toFixed(2));
+                        // $('#total').val(totalValue.toFixed(2));
 
                         swal("Congratulation", "Promo code has been added", "success", {button: false});
                       }else{
